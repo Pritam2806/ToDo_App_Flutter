@@ -1,8 +1,18 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../models/todo.dart';
 
 class FirebaseService {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref('todos');
+  DatabaseReference get _database {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw FirebaseException(
+        plugin: 'firebase_auth',
+        message: 'No authenticated user. Please sign in before accessing data.',
+      );
+    }
+    return FirebaseDatabase.instance.ref('users/${user.uid}/todos');
+  }
 
   Stream<List<Todo>> getTodos() {
     return _database.onValue.map((event) {
